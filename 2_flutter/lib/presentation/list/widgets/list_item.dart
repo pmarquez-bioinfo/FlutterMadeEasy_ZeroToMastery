@@ -14,8 +14,7 @@ class _ListItemState extends State<ListItem> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-          color: Colors.blueAccent, borderRadius: BorderRadius.circular(5)),
+      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(5)),
       child: ListTile(
         title: Text(widget.title),
         subtitle: Text('item number ${widget.index}'),
@@ -26,7 +25,6 @@ class _ListItemState extends State<ListItem> {
               _isSelected = value ?? false;
             });
           },
-          
         ),
       ),
     );

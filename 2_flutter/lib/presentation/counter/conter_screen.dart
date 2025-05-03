@@ -12,14 +12,12 @@ class _CounterScreenState extends State<CounterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       appBar: AppBar(title: const Text('Counter App')),
       body: Center(
         child: Text(
           _counter.toString(),
-          style: TextStyle(
-              fontSize: 70,
-              fontWeight: FontWeight.bold,
-              color: _counter > 0 ? Colors.green : Colors.black),
+          style: TextStyle(fontSize: 70, fontWeight: FontWeight.bold, color: _counter > 0 ? Theme.of(context).primaryColor : Colors.black),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -35,7 +33,7 @@ class _CounterScreenState extends State<CounterScreen> {
                     _counter = _counter - 1;
                   });
                 },
-                backgroundColor: Colors.red,
+                backgroundColor: Theme.of(context).colorScheme.secondary,
                 child: const Icon(Icons.remove)),
             FloatingActionButton(
                 heroTag: 'btn2',
@@ -44,7 +42,7 @@ class _CounterScreenState extends State<CounterScreen> {
                     _counter = _counter + 1;
                   });
                 },
-                backgroundColor: Colors.green,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 child: const Icon(Icons.add)),
           ],
         ),

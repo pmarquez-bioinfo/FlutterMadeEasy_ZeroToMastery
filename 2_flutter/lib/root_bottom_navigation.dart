@@ -16,6 +16,7 @@ class _RootBottomNavigationState extends State<RootBottomNavigation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: IndexedStack(index: _currentIndex, children: const [
         WidgetExampleScreen(),
         CounterScreen(),

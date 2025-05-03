@@ -8,6 +8,7 @@ class ListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     List<String> example = ['example', 'list', 'with', 'strings'];
     return Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         appBar: AppBar(
           title: const Text('ListView Example'),
         ),
