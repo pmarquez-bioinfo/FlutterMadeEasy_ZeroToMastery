@@ -10,13 +10,15 @@ class ThemeAnimationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text('Theme Animation'),
-      ),
-      body: Consumer<ThemeService>(builder: ((context, themeService, child) {
-        return Center(
+    return Consumer<ThemeService>(builder: ((context, themeService, child) {
+      return Scaffold(
+        backgroundColor: themeService.isDarkModeOn ? Theme.of(context).colorScheme.primaryContainer : Theme.of(context).colorScheme.onPrimaryContainer,
+        appBar: AppBar(
+          centerTitle: true,
+          title: const Text('Theme Animation'),
+        ),
+        // body: Consumer<ThemeService>(builder: ((context, themeService, child) {
+        body: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Container(
@@ -115,8 +117,8 @@ class ThemeAnimationScreen extends StatelessWidget {
               ),
             ),
           ),
-        );
-      })),
-    );
+        ),
+      );
+    }));
   }
 }

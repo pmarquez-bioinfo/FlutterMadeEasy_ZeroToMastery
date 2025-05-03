@@ -9,13 +9,6 @@ import 'package:json_theme/json_theme.dart';
 import 'package:flutter/services.dart'; // For rootBundle
 import 'dart:convert'; // For jsonDecode
 
-// void main() {
-//   runApp(ChangeNotifierProvider(
-//     create: (context) => ThemeService(),
-//     child: const MyApp(),
-//   ));
-// }
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
