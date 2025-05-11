@@ -3,7 +3,6 @@ import 'package:flutterbasics/application/theme_service.dart';
 import 'package:flutterbasics/presentation/navigation_example_screens/screen_one.dart';
 import 'package:flutterbasics/presentation/navigation_example_screens/screen_two.dart';
 import 'package:flutterbasics/root_bottom_navigation.dart';
-import 'package:flutterbasics/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:json_theme/json_theme.dart';
 import 'package:flutter/services.dart'; // For rootBundle

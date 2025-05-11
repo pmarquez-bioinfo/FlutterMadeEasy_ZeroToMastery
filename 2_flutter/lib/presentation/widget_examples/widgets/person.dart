@@ -28,14 +28,25 @@ class Person extends StatelessWidget {
           Stack(
             alignment: Alignment.bottomCenter,
             children: [
-              Container(
-                height: 200,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    fit: BoxFit.cover,
-                    image: NetworkImage(pictureUrl),
-                  ),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                child: Image.network(
+                  pictureUrl,
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      height: 200,
+                      width: double.infinity,
+                      color: Colors.grey[300],
+                      child: const Icon(
+                        Icons.person,
+                        size: 100,
+                        color: Colors.grey,
+                      ), // Fallback icon
+                    );
+                  },
                 ),
               ),
               Container(

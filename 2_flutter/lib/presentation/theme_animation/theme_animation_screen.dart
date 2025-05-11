@@ -13,11 +13,11 @@ class ThemeAnimationScreen extends StatelessWidget {
     return Consumer<ThemeService>(builder: ((context, themeService, child) {
       return Scaffold(
         backgroundColor: themeService.isDarkModeOn ? Theme.of(context).colorScheme.primaryContainer : Theme.of(context).colorScheme.onPrimaryContainer,
+        // backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           centerTitle: true,
           title: const Text('Theme Animation'),
         ),
-        // body: Consumer<ThemeService>(builder: ((context, themeService, child) {
         body: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
