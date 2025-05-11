@@ -39,7 +39,11 @@ class ThemeAnimationScreen extends StatelessWidget {
                             Color(0xFF6B66CC),
                             Color(0xFF200F75),
                           ]
-                        : const [Color(0xDDFFFA66), Color(0xDDFFA057), Color(0xDD940B99)],
+                        : const [
+                            Color(0xDDFFFA66),
+                            Color(0xDDFFA057),
+                            Color(0xDD940B99),
+                          ],
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                   )),
