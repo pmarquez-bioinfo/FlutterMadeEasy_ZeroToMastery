@@ -20,7 +20,7 @@ class ErrorMessage extends StatelessWidget {
         ),
         Text(
           message,
-          style: themeData.textTheme.headline1,
+          style: themeData.textTheme.headlineMedium,
           textAlign: TextAlign.center,
         )
       ],

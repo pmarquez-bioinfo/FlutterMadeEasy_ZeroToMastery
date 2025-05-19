@@ -1,10 +1,11 @@
+import 'package:advicer/2_application/pages/advice/advice_page.dart';
+import 'package:advicer/2_application/pages/columnDisplay/column_display_page.dart';
+import 'package:advicer/2_application/root_bottom_navigation.dart';
 import 'package:advicer/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '2_application/core/services/theme_service.dart';
-import '2_application/pages/advice/advice_page.dart';
-
 
 void main() {
   runApp(ChangeNotifierProvider(
@@ -22,7 +23,13 @@ class MyApp extends StatelessWidget {
         themeMode: themeService.isDarkModeOn ? ThemeMode.dark : ThemeMode.light,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        home: const AdvicerPageWrapperProvider(),
+        // home: const AdvicerPageWrapperProvider(),
+        home: const RootBottomNavigation(),
+        routes: <String, WidgetBuilder>{
+          '/root': (BuildContext context) => const RootBottomNavigation(),
+          '/screenOne': (BuildContext context) => const AdvicerPageWrapperProvider(),
+          '/screenTwo': (BuildContext context) => const ColumnDisplayPageWrapperProvider(),
+        },
       );
     });
   }

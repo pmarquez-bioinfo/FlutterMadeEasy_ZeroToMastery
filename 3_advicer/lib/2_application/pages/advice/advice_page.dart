@@ -29,15 +29,14 @@ class AdvicerPage extends StatelessWidget {
         appBar: AppBar(
           title: Text(
             'Advicer',
-            style: themeData.textTheme.headline1,
+            style: themeData.textTheme.headlineMedium,
           ),
           centerTitle: true,
           actions: [
             Switch(
                 value: Provider.of<ThemeService>(context).isDarkModeOn,
                 onChanged: (_) {
-                  Provider.of<ThemeService>(context, listen: false)
-                      .toggleTheme();
+                  Provider.of<ThemeService>(context, listen: false).toggleTheme();
                 })
           ],
         ),
@@ -45,13 +44,12 @@ class AdvicerPage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 50),
           child: Column(
             children: [
-              Expanded(
-                  child: Center(child: BlocBuilder<AdvicerCubit, AdvicerCubitState>(
+              Expanded(child: Center(child: BlocBuilder<AdvicerCubit, AdvicerCubitState>(
                 builder: (context, state) {
                   if (state is AdvicerInitial) {
                     return Text(
                       'Your Advice is waiting for you!',
-                      style: themeData.textTheme.headline1,
+                      style: themeData.textTheme.headlineMedium,
                     );
                   } else if (state is AdvicerStateLoading) {
                     return CircularProgressIndicator(
