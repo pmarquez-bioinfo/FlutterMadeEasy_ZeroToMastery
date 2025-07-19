@@ -12,7 +12,7 @@ class AdvicerInitial extends AdvicerCubitState {}
 class AdvicerStateLoading extends AdvicerCubitState {}
 
 class AdvicerStateLoaded extends AdvicerCubitState {
-  final String advice;
+  final AdviceEntity advice;
   const AdvicerStateLoaded({required this.advice});
 
   @override

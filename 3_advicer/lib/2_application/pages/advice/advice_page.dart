@@ -57,7 +57,7 @@ class AdvicerPage extends StatelessWidget {
                     );
                   } else if (state is AdvicerStateLoaded) {
                     return AdviceField(
-                      advice: state.advice,
+                      advice: state.advice.advice,
                     );
                   } else if (state is AdvicerStateError) {
                     return ErrorMessage(message: state.message);
