@@ -12,6 +12,8 @@ This document tracks the development progress and changes made to the Flutter Ma
 - [ ] **Entity Architecture**: Structure advice models with proper data validation
 - [ ] **Repository Pattern**: Implement data repository layer
 - [ ] **Data Source Integration**: Connect repository to actual data sources
+- [ ] **Host Express Server**: Set up Express server for backend API and Swagger documentation
+- [ ] **Unit Tests**: Add unit tests for domain layer and use cases
 
 ### Backlog
 
