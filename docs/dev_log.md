@@ -8,12 +8,13 @@ This document tracks the development progress and changes made to the Flutter Ma
 
 - [x] **Domain Layer Implementation**: Create proper domain entities for advice data
 - [x] **Error Handling**: Add proper failure handling for use cases
+- [x] **Repository Pattern**: Implement data repository layer
+- [x] **Data Source Integration**: Connect repository to actual data sources
 - [ ] **iOS Home Widget**: Develop iOS home screen widget to display advice
 - [ ] **Entity Architecture**: Structure advice models with proper data validation
-- [ ] **Repository Pattern**: Implement data repository layer
-- [ ] **Data Source Integration**: Connect repository to actual data sources
 - [ ] **Host Express Server**: Set up Express server for backend API and Swagger documentation
 - [ ] **Unit Tests**: Add unit tests for domain layer and use cases
+- [ ] **Local Data Source**: Implement caching mechanism with local storage
 
 ### Backlog
 
@@ -24,6 +25,212 @@ This document tracks the development progress and changes made to the Flutter Ma
 - [ ] Consider adding animations and transitions
 - [ ] Implement advice caching mechanism
 - [ ] Add unit tests for BLoC components
+
+---
+
+## July 19, 2025 - Data Layer Implementation with Repository Pattern
+
+**Commit:** `bff40f9` - "added advice model, remote data source from API, and repository implementation."  
+**Branch:** `dev`  
+**Author:** Pablo Marquez  
+**Date:** July 19, 2025
+
+### Summary
+
+Completed the data layer implementation with full Clean Architecture integration, including data models, remote data sources, and repository pattern. Connected the app to a real external API (flutter-community.com) for fetching advice, establishing a complete data flow from API to UI with proper error handling.
+
+### Key Changes
+
+#### 🆕 New Features
+
+- **Data Models**: Created `AdviceModel` with JSON serialization
+  - Extends `AdviceEntity` for clean architecture compliance
+  - `fromJson()` factory constructor for API response parsing
+  - `toJson()` method for data serialization
+  - Proper handling of API field mapping (`advice_id` to `id`)
+
+- **Remote Data Source**: Implemented HTTP API integration
+  - Abstract interface `AdviceRemoteDataSource` for testability
+  - Concrete implementation `AdviceRemoteDatasourceImplementation`
+  - Real API integration with flutter-community.com advice endpoint
+  - Proper HTTP headers and error handling
+
+- **Repository Implementation**: Complete repository pattern
+  - `AdviceRepositoryImplementation` implementing domain interface
+  - Dependency injection of remote data source
+  - Error handling with Either pattern integration
+  - Clean separation between data and domain layers
+
+#### 🏗️ Architecture
+
+- **Clean Architecture Data Layer**: Complete implementation following Uncle Bob's principles
+
+```dart
+// Data Model with JSON serialization
+class AdviceModel extends AdviceEntity with EquatableMixin {
+  const AdviceModel({
+    required String id,
+    required String advice,
+  }) : super(id: id, advice: advice);
+
+  // Factory constructor for API response parsing
+  factory AdviceModel.fromJson(Map<String, dynamic> json) {
+    return AdviceModel(
+      id: json['advice_id'].toString(),
+      advice: json['advice'] as String,
+    );
+  }
+
+  // Method for data serialization
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'advice': advice,
+    };
+  }
+
+  @override
+  List<Object?> get props => [id, advice];
+}
+```
+
+- **Remote Data Source with HTTP Client**:
+
+```dart
+abstract class AdviceRemoteDataSource {
+  /// Fetches a random piece of advice from the remote server.
+  /// Returns a [AdviceModel] containing the advice.
+  /// Throws a [ServerException] if the request fails, and status code is not 200.
+  Future<AdviceModel> getRandomAdviceFromAPI();
+}
+
+class AdviceRemoteDatasourceImplementation implements AdviceRemoteDataSource {
+  final http.Client httpClient = http.Client();
+
+  @override
+  Future<AdviceModel> getRandomAdviceFromAPI() async {
+    final response = await httpClient.get(
+      Uri.parse('https://api.flutter-community.com/api/v1/advice'),
+      headers: {
+        'content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      return AdviceModel.fromJson(jsonResponse);
+    } else {
+      throw Exception('Failed to load advice');
+    }
+  }
+}
+```
+
+- **Repository Implementation with Error Handling**:
+
+```dart
+class AdviceRepositoryImplementation implements AdviceRepository {
+  final AdviceRemoteDatasourceImplementation adviceRemoteDatasource = 
+      AdviceRemoteDatasourceImplementation();
+
+  @override
+  Future<Either<Failure, AdviceEntity>> getAdviceFromDataSource() async {
+    try {
+      // Fetch advice from the remote data source
+      final adviceEntity = await adviceRemoteDatasource.getRandomAdviceFromAPI();
+      
+      // Return the entity wrapped in a Right (success)
+      return Right(adviceEntity);
+    } catch (e) {
+      // If an error occurs, return a Left (failure)
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+}
+```
+
+- **Simplified Use Cases with Repository Delegation**:
+
+```dart
+class AdviceUscases {
+  final AdviceRepository adviceRepository = AdviceRepositoryImplementation();
+
+  Future<Either<Failure, AdviceEntity>> getAdvice() async {
+    return await adviceRepository.getAdviceFromDataSource();
+  }
+}
+```
+
+#### 📱 App Structure Updates
+
+- **Data Layer Organization**: Complete 3-layer Clean Architecture
+  - `0_data/models/` for data models with JSON serialization
+  - `0_data/datasources/` for external data source implementations
+  - `0_data/repositories/` for repository implementations
+  - Clear dependency direction: data → domain ← application
+
+- **Domain Interface**: Updated repository interface
+  - `AdviceRepository` abstract class in domain layer
+  - Defines contract for data access without implementation details
+  - Maintains dependency inversion principle
+
+#### 🔧 Technical Details
+
+- **HTTP Package Integration**: Added HTTP client for API calls
+  - `http: ^1.4.0` dependency in pubspec.yaml
+  - Proper HTTP headers and status code handling
+  - JSON parsing with dart:convert
+
+- **Data Flow Architecture**: Complete end-to-end data flow
+  - API → Data Source → Repository → Use Cases → Cubit → UI
+  - Proper error propagation through all layers
+  - Type safety maintained throughout the chain
+
+- **Dependency Management**: Concrete dependency injection
+  - Repository instantiated in use cases
+  - Data source instantiated in repository
+  - Prepared for dependency injection container
+
+- **Error Handling Integration**: Seamless error propagation
+  - HTTP exceptions caught and converted to domain failures
+  - Either pattern maintained through all layers
+  - User-friendly error messages in UI layer
+
+### Files Added/Modified
+
+#### New Files
+
+- `0_data/models/advice_model.dart` - Data model with JSON serialization
+- `0_data/datasources/advice_remote_datasource.dart` - HTTP API integration
+- `0_data/repositories/advice_repository_implementation.dart` - Repository implementation
+
+#### Modified Files
+
+- `1_domain/entities/advice_entity.dart` - Enhanced for model inheritance
+- `1_domain/usecases/advice_uscases.dart` - Simplified with repository delegation
+- `pubspec.yaml` - Added HTTP package dependency
+
+#### Deleted Files
+
+- `0_data/.gitkeep` - Removed placeholder file
+
+### Learning Outcomes
+
+- **Clean Architecture**: Complete 3-layer implementation with proper dependencies
+- **Repository Pattern**: Data access abstraction with interface segregation
+- **Data Modeling**: JSON serialization and API response mapping
+- **HTTP Integration**: RESTful API consumption with error handling
+- **Dependency Inversion**: Domain interfaces implemented by data layer
+- **Error Propagation**: Seamless error handling across architectural layers
+
+### Next Steps
+
+- Implement local data source for caching mechanism
+- Add dependency injection container (GetIt or Injectable)
+- Create data source switching logic (remote vs local)
+- Add unit tests for data layer components
+- Implement connection checking for offline support
+- Add data refresh and retry mechanisms
 
 ---
 
