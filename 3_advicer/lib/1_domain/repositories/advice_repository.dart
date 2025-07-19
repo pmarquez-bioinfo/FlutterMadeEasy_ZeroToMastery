@@ -1,15 +1,11 @@
 import 'package:advicer/1_domain/entities/advice_entity.dart';
+import 'package:advicer/1_domain/failures/failures.dart';
+import 'package:dartz/dartz.dart';
 
-class AdviceRepository {
-  Future<AdviceEntity> getAdviceFromDataSource() async {
-    // This method should be implemented to fetch advice from a data source
-    // For now, we will return a fake advice after a delay to simulate a network call
-
-    // Simulate a network call or some business logic to get advice
-    await Future.delayed(const Duration(seconds: 2));
-    return const AdviceEntity(
-      id: '1',
-      advice: 'Stay positive and keep pushing forward!',
-    );
-  }
+// This is the repository interface for the advice feature.
+// It defines the contract for the advice repository, which will be implemented by the data layer.
+// The repository will be responsible for fetching advice from the data source (e.g., API, cache, etc.)
+// and returning it as an AdviceEntity or a Failure if something goes wrong.
+abstract class AdviceRepository {
+  Future<Either<Failure, AdviceEntity>> getAdviceFromDataSource();
 }

@@ -7,10 +7,11 @@ This document tracks the development progress and changes made to the Flutter Ma
 ### Current Sprint
 
 - [x] **Domain Layer Implementation**: Create proper domain entities for advice data
+- [x] **Error Handling**: Add proper failure handling for use cases
 - [ ] **iOS Home Widget**: Develop iOS home screen widget to display advice
 - [ ] **Entity Architecture**: Structure advice models with proper data validation
 - [ ] **Repository Pattern**: Implement data repository layer
-- [ ] **Error Handling**: Add proper failure handling for use cases
+- [ ] **Data Source Integration**: Connect repository to actual data sources
 
 ### Backlog
 
@@ -21,6 +22,187 @@ This document tracks the development progress and changes made to the Flutter Ma
 - [ ] Consider adding animations and transitions
 - [ ] Implement advice caching mechanism
 - [ ] Add unit tests for BLoC components
+
+---
+
+## July 19, 2025 - Error Handling with Dartz Either Pattern
+
+**Commit:** `f2ec205` - "added dartz package to implement Either in getAdvice."  
+**Branch:** `dev`  
+**Author:** Pablo Marquez  
+**Date:** July 19, 2025
+
+### Summary
+
+Implemented comprehensive error handling using the Dartz Either pattern for functional programming approach to failure management. Added failure classes, repository pattern foundation, and updated use cases to return Either<Failure, Success> types for robust error handling throughout the domain layer.
+
+### Key Changes
+
+#### 🆕 New Features
+
+- **Failure Classes**: Created comprehensive failure hierarchy for different error types
+  - `ServerFailure`: For API and server-related errors
+  - `CacheFailure`: For local storage and caching issues
+  - `NetworkFailure`: For connectivity problems
+  - `GeneralFailure`: For unexpected errors
+
+- **Either Pattern**: Integrated functional error handling using Dartz
+  - Use cases now return `Either<Failure, Entity>` types
+  - Eliminates exception throwing in favor of explicit error handling
+  - Allows for better composability and testing
+
+- **Repository Foundation**: Started repository pattern implementation
+  - `AdviceRepository` class with interface structure
+  - Prepared for data source abstraction layer
+
+#### 🏗️ Architecture
+
+- **Functional Error Handling**: Implemented Either pattern for clean error management
+
+```dart
+// Failure hierarchy with inheritance
+abstract class Failure {
+  final String message;
+  Failure({this.message = "An unexpected error occurred."});
+}
+
+class ServerFailure extends Failure {
+  ServerFailure({required String message}) : super(message: message);
+}
+
+class CacheFailure extends Failure {
+  CacheFailure({required String message}) : super(message: message);
+}
+
+class NetworkFailure extends Failure {
+  NetworkFailure({required String message}) : super(message: message);
+}
+
+class GeneralFailure extends Failure {
+  GeneralFailure({required String message}) : super(message: message);
+}
+```
+
+- **Updated Use Cases with Either Pattern**:
+
+```dart
+class AdviceUscases {
+  Future<Either<Failure, AdviceEntity>> getAdvice() async {
+    // TODO call a repository or an API to get the advice or failure
+    // manipulate the data as needed
+    // For now, we will return a fake advice after a delay to simulate a network call
+
+    // Simulate a network call or some business logic to get advice
+    await Future.delayed(const Duration(seconds: 2));
+    
+    // Example of returning a failure for testing
+    return Left(ServerFailure(
+      message: 'Failed to get advice',
+    ));
+    
+    // Success case would be:
+    // return Right(AdviceEntity(
+    //   id: '1',
+    //   advice: 'Stay positive and keep pushing forward!',
+    // ));
+  }
+}
+```
+
+- **Cubit Error Handling Integration**:
+
+```dart
+class AdvicerCubit extends Cubit<AdvicerCubitState> {
+  AdvicerCubit() : super(AdvicerInitial());
+  AdviceUscases adviceUscases = AdviceUscases();
+
+  void adviceRequested() async {
+    emit(AdvicerStateLoading());
+    final result = await adviceUscases.getAdvice();
+    result.fold(
+      (failure) => emit(AdvicerStateError(message: _mapFailureToMessage(failure))),
+      (advice) => emit(AdvicerStateLoaded(advice: advice)),
+    );
+  }
+
+  String _mapFailureToMessage(Failure failure) {
+    switch (failure.runtimeType) {
+      case ServerFailure:
+        return serverFailureMessage;
+      case CacheFailure:
+        return cacheFailureMessage;
+      default:
+        return generalFailureMessage;
+    }
+  }
+}
+```
+
+#### 📱 App Structure Updates
+
+- **Domain Layer Enhancement**: Added failures directory to domain structure
+  - `1_domain/failures/failures.dart` for error definitions
+  - `1_domain/repositories/advice_repository.dart` for data abstraction
+  - Clean separation of error handling concerns
+
+- **Dependency Addition**: Added Dartz package for functional programming
+  - `dartz: ^0.10.1` in pubspec.yaml
+  - Enables Either, Option, and other functional types
+
+#### 🔧 Technical Details
+
+- **Dartz Integration**: Functional programming patterns for error handling
+  - `Either<L, R>` type for representing success or failure
+  - `Left` for failures, `Right` for successful results
+  - `fold()` method for pattern matching and handling both cases
+
+- **Error Message Mapping**: Centralized error message handling
+  - Constant error messages for user-friendly display
+  - Type-based failure mapping for specific error scenarios
+  - Consistent error presentation across the application
+
+- **Repository Pattern Preparation**: Foundation for data layer abstraction
+  - Interface-based design for testability
+  - Separation of data sources from business logic
+  - Prepared for multiple data source implementations
+
+```dart
+// Error message constants
+const String generalFailureMessage = 'Unexpected Error Occurred';
+const String serverFailureMessage = 'Something went wrong with the server, please try again';
+const String cacheFailureMessage = 'Something went wrong with the cache, please try again';
+```
+
+### Files Added/Modified
+
+#### New Files
+
+- `3_advicer/lib/1_domain/failures/failures.dart` - Failure class hierarchy
+- `3_advicer/lib/1_domain/repositories/advice_repository.dart` - Repository pattern foundation
+
+#### Modified Files
+
+- `3_advicer/lib/1_domain/usecases/advice_uscases.dart` - Either pattern implementation
+- `3_advicer/lib/2_application/pages/advice/cubit/advicer_cubit.dart` - Error handling integration
+- `3_advicer/pubspec.yaml` - Added Dartz dependency
+
+### Learning Outcomes
+
+- **Functional Programming**: Understanding Either pattern for error handling
+- **Clean Architecture**: Proper failure management in domain layer
+- **Error Handling Patterns**: Moving from exceptions to explicit error types
+- **Repository Pattern**: Foundation for data abstraction layer
+- **Type Safety**: Compile-time guarantees for error handling
+- **Dartz Library**: Functional programming utilities in Dart
+
+### Next Steps
+
+- Complete repository implementation with actual data sources
+- Add data source interfaces for API and cache layers
+- Implement dependency injection for better testability
+- Add unit tests for failure scenarios
+- Create data models for API integration
+- Implement actual network calls with proper error handling
 
 ---
 
