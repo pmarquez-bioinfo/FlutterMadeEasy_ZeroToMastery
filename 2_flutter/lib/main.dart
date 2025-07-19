@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutterbasics/application/theme_service.dart';
 import 'package:flutterbasics/presentation/navigation_example_screens/screen_one.dart';
 import 'package:flutterbasics/presentation/navigation_example_screens/screen_two.dart';
+import 'package:flutterbasics/presentation/widget_examples/widget_examples_screen.dart';
 import 'package:flutterbasics/root_bottom_navigation.dart';
 import 'package:provider/provider.dart';
 import 'package:json_theme/json_theme.dart';
@@ -15,10 +16,7 @@ void main() async {
   final themeJson = jsonDecode(themeStr);
   final theme = ThemeDecoder.decodeThemeData(themeJson)!;
 
-  runApp(ChangeNotifierProvider(
-    create: (context) => ThemeService(),
-    child: MyApp(theme: theme),
-  ));
+  runApp(MyApp(theme: theme));
 }
 
 class MyApp extends StatelessWidget {
@@ -26,19 +24,8 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key, required this.theme});
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeService>(builder: (context, themeService, child) {
-      return MaterialApp(
-        themeMode: themeService.isDarkModeOn ? ThemeMode.dark : ThemeMode.light,
-        theme: theme,
-        // theme: AppTheme.lightTheme,
-        // darkTheme: AppTheme.darkTheme,
-        home: const RootBottomNavigation(),
-        routes: <String, WidgetBuilder>{
-          '/root': (BuildContext context) => const RootBottomNavigation(),
-          '/screenOne': (BuildContext context) => const ScreenOne(),
-          '/screenTwo': (BuildContext context) => const ScreenTwo(),
-        },
-      );
-    });
+    return MaterialApp(
+      home: const WidgetExampleScreen(),
+    );
   }
 }

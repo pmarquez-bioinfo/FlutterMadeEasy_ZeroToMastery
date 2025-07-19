@@ -6,7 +6,28 @@ class ListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<String> example = ['example', 'list', 'with', 'strings'];
+    List<String> example = [
+      'example',
+      'list',
+      'with',
+      'strings',
+      'and',
+      'separated',
+      'items',
+      'using',
+      'ListView.separated',
+      'this',
+      'is',
+      'a',
+      'simple',
+      'example',
+      'to',
+      'show',
+      'how',
+      'to',
+      'use',
+      'ListView.separated'
+    ];
     return Scaffold(
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         appBar: AppBar(
