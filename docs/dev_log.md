@@ -6,9 +6,11 @@ This document tracks the development progress and changes made to the Flutter Ma
 
 ### Current Sprint
 
-- [ ] **Domain Layer Implementation**: Create proper domain entities for advice data
+- [x] **Domain Layer Implementation**: Create proper domain entities for advice data
 - [ ] **iOS Home Widget**: Develop iOS home screen widget to display advice
 - [ ] **Entity Architecture**: Structure advice models with proper data validation
+- [ ] **Repository Pattern**: Implement data repository layer
+- [ ] **Error Handling**: Add proper failure handling for use cases
 
 ### Backlog
 
@@ -19,6 +21,173 @@ This document tracks the development progress and changes made to the Flutter Ma
 - [ ] Consider adding animations and transitions
 - [ ] Implement advice caching mechanism
 - [ ] Add unit tests for BLoC components
+
+---
+
+## July 19, 2025 - Domain Layer Architecture Implementation
+
+**Commit:** `7f69aa8` - "created advice entity and advice usecases"  
+**Branch:** `dev`  
+**Author:** Pablo Marquez  
+**Date:** July 19, 2025
+
+### Summary
+
+Implemented the domain layer architecture for the Advicer app, establishing proper Clean Architecture patterns with domain entities and use cases. This foundational work separates business logic from presentation and prepares the app for scalable data management.
+
+### Key Changes
+
+#### 🆕 New Features
+
+- **Domain Entity**: Created `AdviceEntity` as the core business model
+  - Immutable data structure with `id` and `advice` properties
+  - Extends Equatable for value comparison and testing
+  - Provides foundation for advice data throughout the app
+
+- **Use Cases Layer**: Implemented `AdviceUscases` with business logic
+  - Asynchronous `getAdvice()` method with simulated network delay
+  - Encapsulates business rules for advice retrieval
+  - Returns properly structured domain entities
+
+#### 🏗️ Architecture
+
+- **Clean Architecture Implementation**: Established proper domain layer following Clean Architecture principles
+
+```dart
+// Domain Entity with Equatable for value comparison
+class AdviceEntity extends Equatable {
+  final String id;
+  final String advice;
+
+  const AdviceEntity({
+    required this.id,
+    required this.advice,
+  });
+
+  @override
+  String toString() {
+    return 'AdviceEntity(id: $id, advice: $advice';
+  }
+
+  @override
+  List<Object?> get props => [advice, id];
+}
+```
+
+```dart
+// Use Cases with business logic encapsulation
+class AdviceUscases {
+  Future<AdviceEntity> getAdvice() async {
+    // TODO call a repository or an API to get the advice or failure
+    // manipulate the data as needed
+    // For now, we will return a fake advice after a delay to simulate a network call
+
+    // Simulate a network call or some business logic to get advice
+    await Future.delayed(const Duration(seconds: 2));
+    return const AdviceEntity(
+      id: '1',
+      advice: 'Stay positive and keep pushing forward!',
+    );
+  }
+}
+```
+
+- **State Management Integration**: Updated Cubit to use domain entities
+
+```dart
+class AdvicerCubit extends Cubit<AdvicerCubitState> {
+  AdvicerCubit() : super(AdvicerInitial());
+  AdviceUscases adviceUscases = AdviceUscases();
+
+  void adviceRequested() async {
+    emit(AdvicerStateLoading());
+    try {
+      final advice = await adviceUscases.getAdvice();
+      emit(AdvicerStateLoaded(advice: advice));
+    } catch (e) {
+      emit(AdvicerStateError(message: e.toString()));
+    }
+  }
+}
+```
+
+```dart
+// Updated state classes to work with domain entities
+class AdvicerStateLoaded extends AdvicerCubitState {
+  final AdviceEntity advice;
+  const AdvicerStateLoaded({required this.advice});
+
+  @override
+  List<Object?> get props => [advice];
+}
+
+class AdvicerStateError extends AdvicerCubitState {
+  final String message;
+  const AdvicerStateError({required this.message});
+  
+  @override
+  List<Object?> get props => [message];
+}
+```
+
+#### 📱 App Structure Updates
+
+- **Domain Layer Organization**: Proper folder structure following Clean Architecture
+  - `1_domain/entities/` for business models
+  - `1_domain/usecases/` for business logic
+  - Clear separation from application and presentation layers
+
+- **Dependency Integration**: Updated application layer to consume domain layer
+  - Cubit now imports and uses domain entities
+  - Use cases injected into state management
+  - Proper error handling structure in place
+
+#### 🔧 Technical Details
+
+- **Equatable Integration**: Domain entities extend Equatable for:
+  - Value-based equality comparison
+  - Improved testing capabilities
+  - Better state management performance
+  - Debugging support with proper toString() methods
+
+- **Async Architecture**: Use cases designed for asynchronous operations
+  - Future-based return types
+  - Proper error handling structure
+  - Simulation of real-world network calls
+
+- **Type Safety**: Strong typing throughout the domain layer
+  - Required parameters for entity construction
+  - Immutable data structures
+  - Clear interfaces for use cases
+
+### Files Added/Modified
+
+#### New Files
+- `3_advicer/lib/1_domain/entities/advice_entity.dart` - Core business entity
+- `3_advicer/lib/1_domain/usecases/advice_uscases.dart` - Business logic layer
+
+#### Modified Files
+- `3_advicer/lib/2_application/pages/advice/advice_page.dart` - Updated to use domain entities
+- `3_advicer/lib/2_application/pages/advice/bloc/advicer_bloc.dart` - Domain layer integration
+- `3_advicer/lib/2_application/pages/advice/cubit/advicer_cubit.dart` - Use cases integration
+- `3_advicer/lib/2_application/pages/advice/cubit/advicer_state.dart` - Entity-based states
+
+### Learning Outcomes
+
+- **Clean Architecture**: Reinforced understanding of domain-driven design principles
+- **Separation of Concerns**: Clear boundaries between domain and application layers
+- **Entity Design**: Proper immutable data structures with value equality
+- **Use Cases Pattern**: Encapsulation of business logic in dedicated classes
+- **Equatable Usage**: Value comparison and state management optimization
+- **Future/Async Patterns**: Asynchronous business logic implementation
+
+### Next Steps
+
+- Implement repository pattern for data access abstraction
+- Add proper failure handling with Either pattern or custom exceptions
+- Create data source interfaces for external API integration
+- Add unit tests for domain entities and use cases
+- Implement dependency injection for better testability
 
 ---
 
