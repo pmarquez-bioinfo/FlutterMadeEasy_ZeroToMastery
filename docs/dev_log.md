@@ -10,6 +10,7 @@ This document tracks the development progress and changes made to the Flutter Ma
 - [x] **Error Handling**: Add proper failure handling for use cases
 - [x] **Repository Pattern**: Implement data repository layer
 - [x] **Data Source Integration**: Connect repository to actual data sources
+- [x] **Dependency Injection**: Implement service locator pattern with GetIt
 - [ ] **iOS Home Widget**: Develop iOS home screen widget to display advice
 - [ ] **Entity Architecture**: Structure advice models with proper data validation
 - [ ] **Host Express Server**: Set up Express server for backend API and Swagger documentation
@@ -25,6 +26,169 @@ This document tracks the development progress and changes made to the Flutter Ma
 - [ ] Consider adding animations and transitions
 - [ ] Implement advice caching mechanism
 - [ ] Add unit tests for BLoC components
+
+---
+
+## August 24, 2025 - Dependency Injection Implementation with GetIt
+
+**Commit:** `07b72a6` - "Implement dependency injection with get_it"  
+**Branch:** `dev`  
+**Author:** Pablo Marquez  
+**Date:** August 24, 2025
+
+### Summary
+
+Implemented comprehensive dependency injection throughout the application using the GetIt service locator pattern. Refactored all layers to accept dependencies via constructor injection, eliminating tight coupling and improving testability. Added a centralized injection configuration that manages the entire dependency graph.
+
+### Key Changes
+
+#### 🆕 New Features
+
+- **Service Locator Pattern**: Integrated GetIt for dependency injection management
+  - Centralized dependency registration in `injection.dart`
+  - Factory registration for all application services
+  - Proper dependency order management
+
+- **Constructor Dependency Injection**: Updated all classes to accept dependencies
+  - `AdvicerCubit` now accepts `AdviceUscases` via constructor
+  - `AdviceUscases` accepts `AdviceRepository` via constructor
+  - `AdviceRepositoryImplementation` accepts `AdviceRemoteDataSource` via constructor
+
+- **External Dependencies**: Proper management of external service dependencies
+  - `IOClient` with custom `HttpClient` configuration
+  - Reusable HTTP client instance across the application
+
+#### 🏗️ Architecture
+
+- **Dependency Injection Container**: Complete service locator implementation
+
+```dart
+final sl = GetIt.instance; // sl is the service locator instance
+
+Future<void> init() async {
+  // ! external Layer - Register external dependencies first
+  sl.registerFactory<IOClient>(() => IOClient(HttpClient()..badCertificateCallback = (cert, host, port) => true));
+
+  // ! data Layer - Register concrete implementations
+  sl.registerFactory<AdviceRemoteDataSource>(() => AdviceRemoteDatasourceImplementation(client: sl()));
+  sl.registerFactory<AdviceRepository>(() => AdviceRepositoryImplementation(adviceRemoteDatasource: sl()));
+
+  // ! domain Layer
+  sl.registerFactory(() => AdviceUscases(adviceRepository: sl()));
+
+  // ! application Layer
+  sl.registerFactory(() => AdvicerCubit(adviceUscases: sl()));
+}
+```
+
+- **Updated Constructor Patterns**: Clean Architecture with dependency injection
+
+```dart
+// Cubit with dependency injection
+class AdvicerCubit extends Cubit<AdvicerCubitState> {
+  AdvicerCubit({required this.adviceUscases}) : super(AdvicerInitial());
+  AdviceUscases adviceUscases;
+
+  void adviceRequested() async {
+    emit(AdvicerStateLoading());
+    final result = await adviceUscases.getAdvice();
+    // ... rest of implementation
+  }
+}
+```
+
+- **Service Locator Integration**: Proper initialization and usage
+
+```dart
+// Main app initialization
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await di.init(); // Initialize the service locator for dependency injection
+  runApp(ChangeNotifierProvider(
+    create: (context) => ThemeService(),
+    child: const MyApp(),
+  ));
+}
+
+// BlocProvider with service locator
+class AdvicerPageWrapperProvider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => sl<AdvicerCubit>(),
+      child: const AdvicerPage(),
+    );
+  }
+}
+```
+
+#### 📱 App Structure Updates
+
+- **Dependency Layer Organization**: Clear separation of dependency concerns
+  - `injection.dart` at root level for global dependency management
+  - Layered registration following Clean Architecture principles
+
+- **Constructor Updates**: All classes now accept dependencies
+  - Eliminated direct instantiation of dependencies
+  - Improved testability with mockable dependencies
+
+#### 🔧 Technical Details
+
+- **GetIt Package Integration**: Professional dependency injection solution
+  - `get_it: ^8.2.0` added to pubspec.yaml
+  - Factory pattern for stateless service creation
+  - Service locator accessible throughout the application
+
+- **Dependency Graph Management**: Proper registration order
+  - External dependencies registered first
+  - Data layer depends on external services
+  - Domain layer depends on data abstractions
+  - Application layer depends on domain services
+
+- **Initialization Pattern**: Async dependency setup
+  - `WidgetsFlutterBinding.ensureInitialized()` for Flutter services
+  - Awaited dependency initialization before app launch
+  - Clean separation of dependency setup from app logic
+
+- **Factory vs Singleton Strategy**: Optimal memory management
+  - Factory registration for stateless services
+  - New instances created for each request
+  - Prevents memory leaks and state pollution
+
+### Files Added/Modified
+
+#### New Files
+
+- `3_advicer/lib/injection.dart` - Complete dependency injection configuration with service locator setup
+
+#### Modified Files
+
+- `3_advicer/lib/0_data/datasources/advice_remote_datasource.dart` - Updated constructor to accept IOClient
+- `3_advicer/lib/0_data/repositories/advice_repository_implementation.dart` - Constructor dependency injection
+- `3_advicer/lib/1_domain/usecases/advice_uscases.dart` - Repository dependency via constructor
+- `3_advicer/lib/2_application/pages/advice/advice_page.dart` - Service locator integration
+- `3_advicer/lib/2_application/pages/advice/cubit/advicer_cubit.dart` - Use cases dependency injection
+- `3_advicer/lib/main.dart` - Dependency initialization on app startup
+- `3_advicer/pubspec.yaml` - Added GetIt package dependency
+
+### Learning Outcomes
+
+- **Dependency Injection Patterns**: Understanding service locator vs dependency injection container
+- **Clean Architecture with DI**: Proper dependency management across architectural layers
+- **GetIt Library**: Professional dependency injection solution for Flutter/Dart
+- **Constructor Injection**: Best practices for accepting dependencies via constructors
+- **Dependency Graph**: Understanding registration order and dependency resolution
+- **Testability Improvement**: Mockable dependencies for better unit testing
+- **Separation of Concerns**: Centralized dependency management vs business logic
+
+### Next Steps
+
+- Implement abstract interfaces for better testability (e.g., abstract HTTP client)
+- Add singleton registration for stateful services like cache managers
+- Create dependency modules for better organization of related services
+- Implement conditional registration for different environments (dev/prod)
+- Add comprehensive unit tests leveraging the new dependency injection setup
+- Consider migrating to more advanced DI solutions like Injectable for larger codebases
 
 ---
 
