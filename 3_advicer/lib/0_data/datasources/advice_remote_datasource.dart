@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:advicer/0_data/exceptions/exceptions.dart';
 import 'package:advicer/0_data/models/advice_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
@@ -32,7 +33,7 @@ class AdviceRemoteDatasourceImplementation implements AdviceRemoteDataSource {
       final jsonResponse = json.decode(response.body);
       return AdviceModel.fromJson(jsonResponse);
     } else {
-      throw Exception('Failed to load advice');
+      throw ServerException(message: 'Failed to load advice');
     }
   }
 }
