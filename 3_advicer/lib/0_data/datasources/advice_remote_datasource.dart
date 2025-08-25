@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:advicer/0_data/models/advice_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/io_client.dart';
 
 abstract class AdviceRemoteDataSource {
   /// Fetches a random piece of advice from the remote server.
@@ -12,11 +14,13 @@ abstract class AdviceRemoteDataSource {
 }
 
 class AdviceRemoteDatasourceImplementation implements AdviceRemoteDataSource {
-  final http.Client httpClient = http.Client();
 
   @override
   Future<AdviceModel> getRandomAdviceFromAPI() async {
-    final response = await httpClient.get(
+    final httpClient = HttpClient()..badCertificateCallback = (cert, host, port) => true;
+    final client = IOClient(httpClient);
+
+    final response = await client.get(
       Uri.parse('https://api.flutter-community.com/api/v1/advice'),
       headers: {
         'content-Type': 'application/json',
