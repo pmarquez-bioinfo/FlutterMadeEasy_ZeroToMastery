@@ -15,11 +15,13 @@ abstract class AdviceRemoteDataSource {
 }
 
 class AdviceRemoteDatasourceImplementation implements AdviceRemoteDataSource {
+  AdviceRemoteDatasourceImplementation({required this.client});
+  final IOClient client;
 
   @override
   Future<AdviceModel> getRandomAdviceFromAPI() async {
-    final httpClient = HttpClient()..badCertificateCallback = (cert, host, port) => true;
-    final client = IOClient(httpClient);
+    // final httpClient = HttpClient()..badCertificateCallback = (cert, host, port) => true;
+    // final client = IOClient(httpClient);
 
     final response = await client.get(
       Uri.parse('https://api.flutter-community.com/api/v1/advice'),

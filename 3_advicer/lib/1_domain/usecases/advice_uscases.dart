@@ -4,10 +4,12 @@ import 'package:advicer/0_data/repositories/advice_repository_implementation.dar
 import 'package:advicer/1_domain/entities/advice_entity.dart';
 import 'package:advicer/1_domain/failures/failures.dart';
 import 'package:advicer/1_domain/repositories/advice_repository.dart';
-import 'package:dartz/dartz.dart'; 
+import 'package:dartz/dartz.dart';
 
 class AdviceUscases {
-  final AdviceRepository adviceRepository = AdviceRepositoryImplementation();
+  AdviceUscases({required this.adviceRepository});
+
+  final AdviceRepository adviceRepository;
 
   Future<Either<Failure, AdviceEntity>> getAdvice() async {
     return await adviceRepository.getAdviceFromDataSource();

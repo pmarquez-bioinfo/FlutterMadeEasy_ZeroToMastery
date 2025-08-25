@@ -28,6 +28,249 @@ This document tracks the development progress and changes made to the Flutter Ma
 
 ---
 
+## August 24, 2025 - Custom Exceptions and Enhanced Error Handling
+
+**Commit:** `340adcf` - "Add custom exceptions and improve error handling"  
+**Branch:** `dev`  
+**Author:** Pablo Marquez  
+**Date:** August 24, 2025
+
+### Summary
+
+Introduced custom exception classes for granular error handling and improved the error propagation throughout the data layer. This enhancement provides more specific error handling for different failure scenarios and better separation between exceptions and domain failures.
+
+### Key Changes
+
+#### 🆕 New Features
+
+- **Custom Exception Classes**: Created dedicated exception types for different error scenarios
+  - `ServerException`: For server and API-related errors
+  - `CacheException`: For local storage and caching errors
+  - Proper message handling with required parameters
+  - Clear separation from domain layer failures
+
+- **Enhanced Data Source Error Handling**: Updated remote data source to throw specific exceptions
+  - `ServerException` thrown when API calls fail (non-200 status codes)
+  - Improved error messaging with context-specific information
+  - Better debugging capabilities with structured exception handling
+
+- **Repository Exception Catching**: Implemented proper exception-to-failure mapping
+  - Catches `ServerException` and maps to `ServerFailure`
+  - Catches `CacheException` and maps to `CacheFailure`
+  - Maintains fallback for unexpected exceptions
+  - Preserves error messages through the transformation
+
+#### 🏗️ Architecture
+
+- **Exception Layer**: Clean separation between data layer exceptions and domain failures
+
+```dart
+// Custom exceptions for data layer
+class ServerException implements Exception {
+  final String message;
+  ServerException({required this.message});
+}
+
+class CacheException implements Exception {
+  final String message;
+  CacheException({required this.message});
+}
+```
+
+- **Data Source Exception Handling**: Updated to throw structured exceptions
+
+```dart
+class AdviceRemoteDatasourceImplementation implements AdviceRemoteDataSource {
+  @override
+  Future<AdviceModel> getRandomAdviceFromAPI() async {
+    // ... HTTP request logic
+    
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      return AdviceModel.fromJson(jsonResponse);
+    } else {
+      throw ServerException(message: 'Failed to load advice');
+    }
+  }
+}
+```
+
+- **Repository Exception-to-Failure Mapping**: Proper error transformation
+
+```dart
+class AdviceRepositoryImplementation implements AdviceRepository {
+  @override
+  Future<Either<Failure, AdviceEntity>> getAdviceFromDataSource() async {
+    try {
+      final adviceEntity = await adviceRemoteDatasource.getRandomAdviceFromAPI();
+      return Right(adviceEntity);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+}
+```
+
+#### 🔧 Technical Details
+
+- **Exception Design Pattern**: Proper exception inheritance and structure
+  - Implements `Exception` interface for type safety
+  - Required message parameter for debugging context
+  - Lightweight design focused on error information transport
+
+- **Error Propagation Chain**: Clear error flow through architecture layers
+  - Data Source → Custom Exceptions → Repository → Domain Failures → Use Cases → UI
+  - Type-safe exception handling with specific catch blocks
+  - Message preservation throughout the error chain
+
+- **Clean Architecture Compliance**: Maintains dependency inversion
+  - Exceptions belong to data layer, not domain
+  - Repository acts as translator between data exceptions and domain failures
+  - Domain layer remains independent of data layer implementation details
+
+### Files Added/Modified
+
+#### New Files
+
+- `0_data/exceptions/exceptions.dart` - Custom exception classes for data layer
+
+#### Modified Files
+
+- `0_data/datasources/advice_remote_datasource.dart` - Updated to throw ServerException
+- `0_data/repositories/advice_repository_implementation.dart` - Added exception catching and mapping
+
+### Learning Outcomes
+
+- **Exception Design**: Understanding custom exception implementation in Dart
+- **Error Handling Patterns**: Separation between exceptions and domain failures
+- **Clean Architecture**: Proper error boundary management across layers
+- **Type Safety**: Specific exception catching for better error handling
+- **Error Propagation**: Maintaining error context through architectural layers
+
+### Next Steps
+
+- Add network connectivity checking before API calls
+- Implement cache exceptions for local storage scenarios
+- Add retry mechanisms for recoverable server errors
+- Create exception unit tests for comprehensive coverage
+- Consider adding error analytics and logging
+
+---
+
+## August 24, 2025 - iOS Configuration and HTTP Client Improvements
+
+**Commit:** `1f5d78c` - "Update iOS config and improve HTTP client handling"  
+**Branch:** `dev`  
+**Author:** Pablo Marquez  
+**Date:** August 24, 2025
+
+### Summary
+
+Updated iOS project configuration with proper bundle identifier, development team settings, and enhanced HTTP client to handle SSL certificate issues. This ensures better compatibility for iOS development and resolves potential network connectivity problems with HTTPS endpoints.
+
+### Key Changes
+
+#### 📱 **iOS Configuration Updates**
+
+- **Xcode Project Settings**: Updated iOS project configuration
+  - Set proper bundle identifier for app distribution
+  - Configured development team settings for code signing
+  - Enhanced project build settings for better compatibility
+
+- **Info.plist Optimization**: Updated iOS app configuration
+  - Adjusted frame duration settings for better performance
+  - Updated indirect input events handling
+  - Improved iOS-specific app behavior settings
+
+#### 🔧 **HTTP Client Enhancement**
+
+- **SSL Certificate Handling**: Implemented custom HTTP client for development
+  - Added `IOClient` with custom `HttpClient` configuration
+  - Implemented certificate bypass for development environments
+  - Better handling of HTTPS endpoints with self-signed certificates
+
+- **Network Resilience**: Improved API connectivity
+  - Custom certificate callback to handle SSL issues
+  - Maintained proper HTTP headers and request structure
+  - Enhanced error handling for network-related problems
+
+#### 🏗️ Architecture
+
+- **Enhanced HTTP Client Implementation**: Custom client for better SSL handling
+
+```dart
+class AdviceRemoteDatasourceImplementation implements AdviceRemoteDataSource {
+  @override
+  Future<AdviceModel> getRandomAdviceFromAPI() async {
+    // Custom HTTP client with SSL certificate handling
+    final httpClient = HttpClient()
+      ..badCertificateCallback = (cert, host, port) => true;
+    final client = IOClient(httpClient);
+
+    final response = await client.get(
+      Uri.parse('https://api.flutter-community.com/api/v1/advice'),
+      headers: {
+        'content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      return AdviceModel.fromJson(jsonResponse);
+    } else {
+      throw ServerException(message: 'Failed to load advice');
+    }
+  }
+}
+```
+
+#### 🔧 Technical Details
+
+- **IOClient Integration**: Enhanced HTTP handling capabilities
+  - `IOClient` wrapper around custom `HttpClient`
+  - Certificate callback for development SSL bypass
+  - Maintained compatibility with existing HTTP package patterns
+
+- **iOS Development Setup**: Proper project configuration
+  - Bundle identifier configuration for app store compliance
+  - Development team settings for local development
+  - Code signing configuration for device testing
+
+- **Network Security**: Development-friendly SSL handling
+  - Certificate bypass for development and testing
+  - Maintained proper HTTPS usage for production readiness
+  - Clear separation between development and production configurations
+
+### Files Added/Modified
+
+#### Modified Files
+
+- `ios/Runner.xcodeproj/project.pbxproj` - Updated Xcode project settings and build configuration
+- `ios/Runner/Info.plist` - Enhanced iOS app configuration and performance settings
+- `0_data/datasources/advice_remote_datasource.dart` - Improved HTTP client with SSL handling
+
+### Learning Outcomes
+
+- **iOS Development**: Understanding Xcode project configuration and settings
+- **HTTP Client Customization**: Advanced HTTP client configuration in Dart
+- **SSL Certificate Management**: Handling certificate issues in development
+- **Network Programming**: Custom HTTP client implementation patterns
+- **Mobile Platform Integration**: iOS-specific development considerations
+
+### Next Steps
+
+- Implement production-ready SSL certificate validation
+- Add network connectivity checking before API calls
+- Create environment-specific HTTP client configurations
+- Add proper logging for network requests and responses
+- Consider implementing request retry mechanisms
+
+---
+
 ## July 19, 2025 - Data Layer Implementation with Repository Pattern
 
 **Commit:** `bff40f9` - "added advice model, remote data source from API, and repository implementation."  

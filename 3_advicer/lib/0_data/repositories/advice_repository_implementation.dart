@@ -11,7 +11,9 @@ class AdviceRepositoryImplementation implements AdviceRepository {
   // This is where we will implement the methods defined in the AdviceRepository interface.
   // For now, we will return a fake advice after a delay to simulate a network call.
 
-  final AdviceRemoteDatasourceImplementation adviceRemoteDatasource = AdviceRemoteDatasourceImplementation();
+  AdviceRepositoryImplementation({required this.adviceRemoteDatasource});
+
+  final AdviceRemoteDataSource adviceRemoteDatasource;
 
   @override
   Future<Either<Failure, AdviceEntity>> getAdviceFromDataSource() async {

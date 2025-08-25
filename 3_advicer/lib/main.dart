@@ -1,13 +1,16 @@
 import 'package:advicer/2_application/pages/advice/advice_page.dart';
 import 'package:advicer/2_application/pages/columnDisplay/column_display_page.dart';
 import 'package:advicer/2_application/root_bottom_navigation.dart';
+import 'package:advicer/injection.dart' as di;
 import 'package:advicer/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '2_application/core/services/theme_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await di.init(); // Initialize the service locator for dependency injection
   runApp(ChangeNotifierProvider(
     create: (context) => ThemeService(),
     child: const MyApp(),

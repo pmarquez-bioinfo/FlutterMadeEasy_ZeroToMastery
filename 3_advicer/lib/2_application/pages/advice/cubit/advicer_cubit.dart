@@ -6,13 +6,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'advicer_state.dart';
 
-
 const String generalFailureMessage = 'Unexpected Error Occurred';
 const String serverFailureMessage = 'Something went wrong with the server, please try again';
 const String cacheFailureMessage = 'Something went wrong with the cache, please try again';
+
 class AdvicerCubit extends Cubit<AdvicerCubitState> {
-  AdvicerCubit() : super(AdvicerInitial());
-  AdviceUscases adviceUscases = AdviceUscases();
+  AdvicerCubit({required this.adviceUscases}) : super(AdvicerInitial());
+  AdviceUscases adviceUscases;
   // could also use other usecases
 
   void adviceRequested() async {
